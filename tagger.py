@@ -62,7 +62,17 @@ def get_destination_path(metadata):
             metadata[tag] = str(metadata['year'])[0:-1]+"0"
 
         if (metadata[tag]):            
-            basic_path = basic_path.replace(organizing_tag, str(metadata[tag]))
+            organizing_tag_value = str(metadata[tag]).strip()
+            organizing_tag_value = organizing_tag_value.replace("/","_")
+            organizing_tag_value = organizing_tag_value.replace("\\","_")
+            organizing_tag_value = organizing_tag_value.replace("..","_")
+            organizing_tag_value = organizing_tag_value.replace(":","_")
+            organizing_tag_value = organizing_tag_value.replace(">","_")
+            organizing_tag_value = organizing_tag_value.replace("<","_")
+            organizing_tag_value = organizing_tag_value.replace("?","_")
+            organizing_tag_value = organizing_tag_value.replace("*","_")
+
+            basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
         else:
             basic_path = basic_path.replace(organizing_tag, "UNKNOWN")
 
