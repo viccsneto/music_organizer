@@ -13,9 +13,11 @@ parser.add_argument('--source_path', dest="source_path",  type=str, help='The pa
 
 parser.add_argument('--destination_path', dest="destination_path", type=str, help='The parent folder where the music files are going to be organized.', required=True)
 
-parser.add_argument('--organization_pattern', dest="organization_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrate}/") will derive something like "Rock/1980/320/"', default='{genre}/{decade}/{bitrate}/')
+parser.add_argument('--organization_pattern', dest="organization_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitlevel}/") will derive something like "Rock/1980/320/"', default='{genre}/{decade}/{bitlevel}/')
 
 parser.add_argument('--file_format', dest="file_format", type=str, help='Comma separated file extensions to scan. (e.g., "mp3,m4a)" will derive something like "Rock/1980/320/"', default='mp3,m4a')
+
+parser.add_argument('--desired_bitrate', dest="desired_bitrate", type=int, help='Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}', default=100)
 
 args = parser.parse_args()
 
@@ -28,13 +30,26 @@ def get_destination_path(metadata):
 
     organization_tags = organization_pattern_regular_expression.findall(basic_path)
     for organization_tag in organization_tags:
-        tag = organization_tag[1:-1]
-        if (tag == 'decade'):
+        tag = organization_tag[1:-1]        
+
+        if (tag == 'bitratelevel'):
+            metadata[tag] = metadata['bitratelevel'] // args.desired_bitrate
+        elif (tag == 'bitrateclass'):
+            if metadata['bitrate'] >= args.desired_bitrate:
+                metadata[tag] = "GOOD_BITRATE"
+            else:
+                metadata[tag] = "POOR_BITRATE"
+        elif (tag == 'bitratefilter'):
+            if metadata['bitrate'] < args.desired_bitrate:
+                return None
+            else:
+                metadata[tag] = "FILTERED_BITRATE"
+        elif (tag == 'bitrate'):
+            metadata[tag] = int(metadata[tag])
+        elif (tag == 'decade'):
             metadata[tag] = str(metadata['year'])[0:-1]+"0"
-        
-        if (metadata[tag]):
-            if (tag == 'bitrate'):
-                metadata[tag] = int(metadata[tag])
+
+        if (metadata[tag]):            
             basic_path = basic_path.replace(organization_tag, str(metadata[tag]))
         else:
             basic_path = basic_path.replace(organization_tag, "Unknown")
@@ -47,20 +62,23 @@ processed_files = dict()
 def process_file(filename):
     metadata = TinyTag.get(filename).as_dict()
     destination_path = get_destination_path(metadata)
-    print(f'"{filename}" will be copied to "{destination_path}"')    
-    if not os.path.isdir(destination_path):
-        os.makedirs(destination_path)
-    
-    shutil.copy2(filename, destination_path)
-    
-    if (not destination_path in processed_files.keys()):
-        processed_files[destination_path] = dict()
-
-    size = os.path.getsize(filename)
-    if (not size in processed_files[destination_path].keys()):
-        processed_files[destination_path][size] = list()
+    if destination_path:
+        print(f'[+]"{filename}" will be copied to "{destination_path}"')    
+        if not os.path.isdir(destination_path):
+            os.makedirs(destination_path)
         
-    processed_files[destination_path][size].append(filename)
+        shutil.copy2(filename, destination_path)
+        
+        if (not destination_path in processed_files.keys()):
+            processed_files[destination_path] = dict()
+
+        size = os.path.getsize(filename)
+        if (not size in processed_files[destination_path].keys()):
+            processed_files[destination_path][size] = list()
+            
+        processed_files[destination_path][size].append(filename)
+    else:
+        print(f'[-]"{filename}" was filtered out')
 
 
 file_extensions = args.file_format.split(',')
