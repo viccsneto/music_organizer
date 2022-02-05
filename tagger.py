@@ -8,19 +8,29 @@ import shutil
 import sys
 from tinytag import TinyTag
 
+banner = """ ____      _   ____   _    ____ _   _ _   _   __  __           _      
+|  _ \    | | |  _ \ / \  / ___| | | | | | | |  \/  |_   _ ___(_) ___ 
+| | | |_  | | | |_) / _ \| |   | |_| | | | | | |\/| | | | / __| |/ __|
+| |_| | |_| | |  __/ ___ \ |___|  _  | |_| | | |  | | |_| \__ \ | (__ 
+|____/ \___/  |_| /_/   \_\____|_| |_|\___/  |_|  |_|\__,_|___/_|\___|
+                                                                      
+  ___                        _              
+ / _ \ _ __ __ _  __ _ _ __ (_)_______ _ __ 
+| | | | '__/ _` |/ _` | '_ \| |_  / _ \ '__|
+| |_| | | | (_| | (_| | | | | |/ /  __/ |   
+ \___/|_|  \__, |\__,_|_| |_|_/___\___|_|   
+           |___/                            
+
+                                                  Organize music files
+"""
+
 parser = argparse.ArgumentParser(description='Organize music files')
 parser.add_argument('--source_path', dest="source_path",  type=str, help='The parent folder of the directory tree containing all music files you want to organize.', required=True)
-
 parser.add_argument('--destination_path', dest="destination_path", type=str, help='The parent folder where the music files are going to be organized.', required=True)
-
-parser.add_argument('--organizing_pattern', dest="organizing_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitlevel}/") will derive something like "Rock/1980/320/"', default='{genre}/{decade}/{bitlevel}/')
-
+parser.add_argument('--organizing_pattern', dest="organizing_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrateclass}/") will derive something like "Rock/1980/GOOD_BITRATE/"', default='{genre}/{decade}/{bitrateclass}/')
 parser.add_argument('--file_format', dest="file_format", type=str, help='Comma separated file extensions to scan. (e.g., "mp3,m4a)" will derive something like "Rock/1980/320/"', default='mp3,m4a')
-
 parser.add_argument('--desired_bitrate', dest="desired_bitrate", type=int, help='Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}', default=100)
-
 args = parser.parse_args()
-
 organizing_pattern_regular_expression = re.compile(r'\{.*?\}')
 
 def get_destination_path(metadata):
@@ -80,16 +90,6 @@ def process_file(filename):
     else:
         print(f'[-]"{filename}" was filtered out')
 
-
-file_extensions = args.file_format.split(',')
-
-for extension in file_extensions:
-    search_path = args.source_path + '/**/*.' + extension
-    files = sorted(list(glob.glob(search_path,recursive = True)))
-    for file in files:
-        process_file(file)
-
-
 def get_digest(filename):
     BLOCKSIZE = 65536
     hasher = hashlib.blake2b()
@@ -123,11 +123,24 @@ def find_duplicated():
             if (len(candidates) > 1):
                 colliding = find_colliding(candidates)
                 if len(colliding) > 0:
-                    print(f'The following files are duplicated in "{destination_folder}" ----------------------')
+                    print(f'The following files are duplicated in "{destination_folder}":')
                     for file_list in colliding:
                         for i in range(len(file_list)):
                             print(f"{i+1} {file_list[i]}")
                         print('\n\n')                        
-                    print('---------------------------------------------------------------------------------')
+                    print(' --- ')
 
-find_duplicated()
+
+def main():
+    print(banner)    
+    file_extensions = args.file_format.split(',')
+
+    for extension in file_extensions:
+        search_path = args.source_path + '/**/*.' + extension
+        files = sorted(list(glob.glob(search_path,recursive = True)))
+        for file in files:
+            process_file(file)
+
+    find_duplicated()
+
+main()
