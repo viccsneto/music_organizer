@@ -36,9 +36,8 @@ def get_destination_path(metadata):
             if (tag == 'bitrate'):
                 metadata[tag] = int(metadata[tag])
             basic_path = basic_path.replace(organization_tag, str(metadata[tag]))
-
-    basic_path.replace("{","_")
-    basic_path.replace("}","_")
+        else:
+            basic_path = basic_path.replace(organization_tag, "Unknown")
 
     return basic_path
     
