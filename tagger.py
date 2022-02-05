@@ -1,8 +1,10 @@
 #!/bin/env python3
 import argparse
 import glob
+import hashlib
 import re
 import os
+import shutil
 import sys
 from tinytag import TinyTag
 
@@ -46,16 +48,19 @@ processed_files = dict()
 def process_file(filename):
     metadata = TinyTag.get(filename).as_dict()
     destination_path = get_destination_path(metadata)
-    print(f'"{filename}" will be copied to "{destination_path}"')
+    print(f'"{filename}" will be copied to "{destination_path}"')    
+    if not os.path.isdir(destination_path):
+        os.makedirs(destination_path)
+    
+    shutil.copy2(filename, destination_path)
+    
     if (not destination_path in processed_files.keys()):
         processed_files[destination_path] = dict()
 
     size = os.path.getsize(filename)
     if (not size in processed_files[destination_path].keys()):
         processed_files[destination_path][size] = list()
-    
-    if (len(processed_files[destination_path][size]) > 0):
-        print("Toma")
+        
     processed_files[destination_path][size].append(filename)
 
 
@@ -68,14 +73,44 @@ for extension in file_extensions:
         process_file(file)
 
 
+def get_digest(filename):
+    BLOCKSIZE = 65536
+    hasher = hashlib.blake2b()
+    with open(filename, 'rb') as afile:
+        buf = afile.read(BLOCKSIZE)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = afile.read(BLOCKSIZE)
+    return hasher.hexdigest()
+
+def find_colliding(candidates):
+    colliding = []
+    candidate_digests = dict()
+    for candidate in candidates:
+        digest = get_digest(candidate)
+        if not digest in candidate_digests.keys():
+            candidate_digests[digest] = list()
+        candidate_digests[digest].append(candidate)
+    
+    for digests in candidate_digests.keys():
+        if len(candidate_digests[digest]) > 1:
+            colliding.append(candidate_digests[digest])
+    
+    return colliding
+
+
 def find_duplicated():
     for destination_folder in processed_files:
         for size in processed_files[destination_folder]:
             candidates = processed_files[destination_folder][size]
             if (len(candidates) > 1):
-                print(f"The following files in {destination_folder} are potential duplicates --------------------")
-                for file in candidates:
-                    print(file)
-                print("------------------------------------------------------------------------------------------------")
+                colliding = find_colliding(candidates)
+                if len(colliding) > 0:
+                    print(f'The following files are duplicated in "{destination_folder}" ----------------------')
+                    for file_list in colliding:
+                        for i in range(len(file_list)):
+                            print(f"{i+1} {file_list[i]}")
+                        print('\n\n')                        
+                    print('---------------------------------------------------------------------------------')
 
 find_duplicated()
