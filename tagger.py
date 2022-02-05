@@ -13,7 +13,7 @@ parser.add_argument('--source_path', dest="source_path",  type=str, help='The pa
 
 parser.add_argument('--destination_path', dest="destination_path", type=str, help='The parent folder where the music files are going to be organized.', required=True)
 
-parser.add_argument('--organization_pattern', dest="organization_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitlevel}/") will derive something like "Rock/1980/320/"', default='{genre}/{decade}/{bitlevel}/')
+parser.add_argument('--organizing_pattern', dest="organizing_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitlevel}/") will derive something like "Rock/1980/320/"', default='{genre}/{decade}/{bitlevel}/')
 
 parser.add_argument('--file_format', dest="file_format", type=str, help='Comma separated file extensions to scan. (e.g., "mp3,m4a)" will derive something like "Rock/1980/320/"', default='mp3,m4a')
 
@@ -21,16 +21,16 @@ parser.add_argument('--desired_bitrate', dest="desired_bitrate", type=int, help=
 
 args = parser.parse_args()
 
-organization_pattern_regular_expression = re.compile(r'\{.*?\}')
+organizing_pattern_regular_expression = re.compile(r'\{.*?\}')
 
 def get_destination_path(metadata):
-    basic_path = args.destination_path +"/" + args.organization_pattern
+    basic_path = args.destination_path +"/" + args.organizing_pattern
     basic_path = basic_path.replace("//","/")
     basic_path = basic_path.replace("\\","/")
 
-    organization_tags = organization_pattern_regular_expression.findall(basic_path)
-    for organization_tag in organization_tags:
-        tag = organization_tag[1:-1]        
+    organizing_tags = organizing_pattern_regular_expression.findall(basic_path)
+    for organizing_tag in organizing_tags:
+        tag = organizing_tag[1:-1]        
 
         if (tag == 'bitratelevel'):
             metadata[tag] = metadata['bitratelevel'] // args.desired_bitrate
@@ -50,9 +50,9 @@ def get_destination_path(metadata):
             metadata[tag] = str(metadata['year'])[0:-1]+"0"
 
         if (metadata[tag]):            
-            basic_path = basic_path.replace(organization_tag, str(metadata[tag]))
+            basic_path = basic_path.replace(organizing_tag, str(metadata[tag]))
         else:
-            basic_path = basic_path.replace(organization_tag, "Unknown")
+            basic_path = basic_path.replace(organizing_tag, "Unknown")
 
     return basic_path
     
