@@ -44,24 +44,24 @@ def get_destination_path(metadata):
     for organizing_tag in organizing_tags:
         tag = organizing_tag[1:-1]        
 
-        if (tag == 'bitratelevel'):
+        if tag == 'bitratelevel':
             metadata[tag] = metadata['bitratelevel'] // args.desired_bitrate
-        elif (tag == 'bitrateclass'):
+        elif tag == 'bitrateclass':
             if metadata['bitrate'] >= args.desired_bitrate:
                 metadata[tag] = "GOOD_BITRATE"
             else:
                 metadata[tag] = "POOR_BITRATE"
-        elif (tag == 'bitratefilter'):
+        elif tag == 'bitratefilter':
             if metadata['bitrate'] < args.desired_bitrate:
                 return None
             else:
                 metadata[tag] = "FILTERED_BITRATE"
-        elif (tag == 'bitrate'):
+        elif tag == 'bitrate':
             metadata[tag] = int(metadata[tag])
-        elif (tag == 'decade'):
+        elif tag == 'decade':
             metadata[tag] = str(metadata['year'])[0:-1]+"0"
 
-        if (metadata[tag]):            
+        if metadata[tag]:
             organizing_tag_value = str(metadata[tag]).strip()
             organizing_tag_value = organizing_tag_value.replace("/","_")
             organizing_tag_value = organizing_tag_value.replace("\\","_")
@@ -91,11 +91,11 @@ def process_file(filename):
         
         shutil.copy2(filename, destination_path)
         
-        if (not destination_path in processed_files.keys()):
+        if not destination_path in processed_files.keys():
             processed_files[destination_path] = dict()
 
         size = os.path.getsize(filename)
-        if (not size in processed_files[destination_path].keys()):
+        if not size in processed_files[destination_path].keys():
             processed_files[destination_path][size] = list()
             
         processed_files[destination_path][size].append(filename)
@@ -132,7 +132,7 @@ def find_duplicated():
     for destination_folder in processed_files:
         for size in processed_files[destination_folder]:
             candidates = processed_files[destination_folder][size]
-            if (len(candidates) > 1):
+            if len(candidates) > 1:
                 colliding = find_colliding(candidates)
                 if len(colliding) > 0:
                     print(HORIZONTAL_RULE)
