@@ -8,7 +8,8 @@ import shutil
 import sys
 from tinytag import TinyTag
 
-banner = """ ____      _   ____   _    ____ _   _ _   _   __  __           _      
+
+BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _      
 |  _ \    | | |  _ \ / \  / ___| | | | | | | |  \/  |_   _ ___(_) ___ 
 | | | |_  | | | |_) / _ \| |   | |_| | | | | | |\/| | | | / __| |/ __|
 | |_| | |_| | |  __/ ___ \ |___|  _  | |_| | | |  | | |_| \__ \ | (__ 
@@ -23,6 +24,7 @@ banner = """ ____      _   ____   _    ____ _   _ _   _   __  __           _
 
                                                   Organize music files
 """
+HORIZONTAL_RULE = "-" * 200
 
 parser = argparse.ArgumentParser(description='Organize music files')
 parser.add_argument('--source_path', dest="source_path",  type=str, help='The parent folder of the directory tree containing all music files you want to organize.', required=True)
@@ -62,7 +64,7 @@ def get_destination_path(metadata):
         if (metadata[tag]):            
             basic_path = basic_path.replace(organizing_tag, str(metadata[tag]))
         else:
-            basic_path = basic_path.replace(organizing_tag, "Unknown")
+            basic_path = basic_path.replace(organizing_tag, "UNKNOWN")
 
     return basic_path
     
@@ -73,7 +75,7 @@ def process_file(filename):
     metadata = TinyTag.get(filename).as_dict()
     destination_path = get_destination_path(metadata)
     if destination_path:
-        print(f'[+]"{filename}" will be copied to "{destination_path}"')    
+        print(f'[+]"{filename}" ==> "{destination_path}"')    
         if not os.path.isdir(destination_path):
             os.makedirs(destination_path)
         
@@ -123,16 +125,18 @@ def find_duplicated():
             if (len(candidates) > 1):
                 colliding = find_colliding(candidates)
                 if len(colliding) > 0:
+                    print(HORIZONTAL_RULE)
                     print(f'The following files are duplicated in "{destination_folder}":')
+                    print(HORIZONTAL_RULE)
                     for file_list in colliding:
                         for i in range(len(file_list)):
-                            print(f"{i+1} {file_list[i]}")
+                            print(f"\t{i+1} {file_list[i]}")
                         print('\n\n')                        
-                    print(' --- ')
+                    print('###')
 
 
 def main():
-    print(banner)    
+    print(BANNER)    
     file_extensions = args.file_format.split(',')
 
     for extension in file_extensions:
