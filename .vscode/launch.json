@@ -13,7 +13,8 @@
             "args":[
                 "--source_path", "/home/user/Desktop/Music",
                 "--destination_path", "/tmp/organized/",
-                "--organizing_pattern", "{genre}/{decade}/{bitrate}",
+                "--organizing_pattern", "{genre}/{decade}/{bitrateclass}",
+                "--desired_bitrate", "300",
             ]
         }
     ]
