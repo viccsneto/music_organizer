@@ -35,13 +35,13 @@ HORIZONTAL_RULE = "-" * 140
 @click.option(
     "--source_path",
     help="The parent folder of the directory tree containing all music files you want to organize",
-    type=click.Path(exists=True, file_okay=False),
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
     required=True,
 )
 @click.option(
     "--destination_path",
     help="The parent folder where the music files are going to be organized",
-    type=click.Path(exists=True, file_okay=False),
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
     required=True,
 )
 @click.option(
