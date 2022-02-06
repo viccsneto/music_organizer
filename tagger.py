@@ -75,7 +75,7 @@ def get_destination_path(metadata):
         elif tag == 'bitrate':
             metadata[tag] = int(metadata[tag])
         elif tag == 'decade':
-            metadata[tag] = str(metadata['year'])[0:-1] + '0'
+            metadata[tag] = str(metadata['year']).strip()[0:-1] + '0'
 
         if metadata[tag]:
             organizing_tag_value = sanitize_metadata_tag(metadata[tag])
