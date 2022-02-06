@@ -1,1 +1,8 @@
+black==22.1.0
+click==8.0.3
+mypy-extensions==0.4.3
+pathspec==0.9.0
+platformdirs==2.4.1
 tinytag==1.7.0
+tomli==2.0.0
+typing-extensions==4.0.1
