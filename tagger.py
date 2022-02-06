@@ -24,64 +24,64 @@ BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _
 
                                                   Organize music files
 """
-HORIZONTAL_RULE = "-" * 140
+HORIZONTAL_RULE = '-' * 140
 
 parser = argparse.ArgumentParser(description='Organize music files')
-parser.add_argument('--source_path', dest="source_path",  type=str, help='The parent folder of the directory tree containing all music files you want to organize.', required=True)
-parser.add_argument('--destination_path', dest="destination_path", type=str, help='The parent folder where the music files are going to be organized.', required=True)
-parser.add_argument('--organizing_pattern', dest="organizing_pattern", type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrateclass}/") will derive something like "Rock/1980/GOOD_BITRATE/"', default='{genre}/{decade}/{bitrateclass}/')
-parser.add_argument('--file_format', dest="file_format", type=str, help='Comma separated file extensions to scan. (e.g., "mp3,m4a)" will derive something like "Rock/1980/320/"', default='mp3,m4a')
-parser.add_argument('--desired_bitrate', dest="desired_bitrate", type=int, help='Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}', default=100)
+parser.add_argument('--source_path', dest='source_path',  type=str, help='The parent folder of the directory tree containing all music files you want to organize.', required=True)
+parser.add_argument('--destination_path', dest='destination_path', type=str, help='The parent folder where the music files are going to be organized.', required=True)
+parser.add_argument('--organizing_pattern', dest='organizing_pattern', type=str, help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrateclass}/") will derive something like "Rock/1980/GOOD_BITRATE/"', default='{genre}/{decade}/{bitrateclass}/')
+parser.add_argument('--file_format', dest='file_format', type=str, help='Comma separated file extensions to scan. (e.g., "mp3,m4a")', default='mp3,m4a')
+parser.add_argument('--desired_bitrate', dest='desired_bitrate', type=int, help='Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}', default=100)
 args = parser.parse_args()
 organizing_pattern_regular_expression = re.compile(r'\{.*?\}')
 
 def sanitize_metadata_tag(value):
     sanitized_value = str(value).strip()
-    sanitized_value = sanitized_value.replace("/","_")
-    sanitized_value = sanitized_value.replace("\\","_")
-    sanitized_value = sanitized_value.replace("..","_")
-    sanitized_value = sanitized_value.replace("\'","_")
-    sanitized_value = sanitized_value.replace("\"","_")
-    sanitized_value = sanitized_value.replace("|","_")
-    sanitized_value = sanitized_value.replace(":","_")
-    sanitized_value = sanitized_value.replace(">","_")
-    sanitized_value = sanitized_value.replace("<","_")
-    sanitized_value = sanitized_value.replace("?","_")
-    sanitized_value = sanitized_value.replace("*","_")
+    sanitized_value = sanitized_value.replace('/','_')
+    sanitized_value = sanitized_value.replace('\\','_')
+    sanitized_value = sanitized_value.replace('..','_')
+    sanitized_value = sanitized_value.replace('\'','_')
+    sanitized_value = sanitized_value.replace('\"','_')
+    sanitized_value = sanitized_value.replace('|','_')
+    sanitized_value = sanitized_value.replace(':','_')
+    sanitized_value = sanitized_value.replace('>','_')
+    sanitized_value = sanitized_value.replace('<','_')
+    sanitized_value = sanitized_value.replace('?','_')
+    sanitized_value = sanitized_value.replace('*','_')
     
     return sanitized_value
 
 def get_destination_path(metadata):
-    basic_path = args.destination_path +"/" + args.organizing_pattern
-    basic_path = basic_path.replace("//","/")
-    basic_path = basic_path.replace("\\","/")
+    basic_path = args.destination_path +'/' + args.organizing_pattern
+    basic_path = basic_path.replace('//','/')
+    basic_path = basic_path.replace('\\','/')
 
     organizing_tags = organizing_pattern_regular_expression.findall(basic_path)
     for organizing_tag in organizing_tags:
         tag = organizing_tag[1:-1]        
 
         if tag == 'bitratelevel':
-            metadata[tag] = metadata['bitratelevel'] // args.desired_bitrate
+            metadata[tag] = metadata['bitrate'] // args.desired_bitrate
         elif tag == 'bitrateclass':
             if metadata['bitrate'] >= args.desired_bitrate:
-                metadata[tag] = "GOOD_BITRATE"
+                metadata[tag] = 'GOOD_BITRATE'
             else:
-                metadata[tag] = "POOR_BITRATE"
+                metadata[tag] = 'POOR_BITRATE'
         elif tag == 'bitratefilter':
             if metadata['bitrate'] < args.desired_bitrate:
                 return None
             else:
-                metadata[tag] = "FILTERED_BITRATE"
+                metadata[tag] = 'FILTERED_BITRATE'
         elif tag == 'bitrate':
             metadata[tag] = int(metadata[tag])
         elif tag == 'decade':
-            metadata[tag] = str(metadata['year'])[0:-1]+"0"
+            metadata[tag] = str(metadata['year'])[0:-1] + '0'
 
         if metadata[tag]:
             organizing_tag_value = sanitize_metadata_tag(metadata[tag])
             basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
         else:
-            basic_path = basic_path.replace(organizing_tag, "UNKNOWN")
+            basic_path = basic_path.replace(organizing_tag, 'UNKNOWN')
 
     return basic_path
     
@@ -147,21 +147,26 @@ def find_duplicated():
                     print(HORIZONTAL_RULE)
                     for file_list in colliding:
                         for i in range(len(file_list)):
-                            print(f"\t{i+1} {file_list[i]}")
+                            print(f'\t{i+1} {file_list[i]}')
                         print('\n\n')                        
                     print('###')
 
 
 def main():
-    print(BANNER)    
-    file_extensions = args.file_format.split(',')
+    try:
+        print(BANNER)    
+        file_extensions = args.file_format.split(',')
 
-    for extension in file_extensions:
-        search_path = args.source_path + '/**/*.' + extension
-        files = sorted(list(glob.glob(search_path,recursive = True)))
-        for file in files:
-            process_file(file)
+        for extension in file_extensions:
+            search_path = args.source_path + '/**/*.' + extension
+            files = sorted(list(glob.glob(search_path,recursive = True)))
+            for file in files:
+                process_file(file)
 
-    find_duplicated()
+        find_duplicated()
+    except KeyboardInterrupt:
+        print('\nBye...\n')
+    except Exception as error:
+        print('\nSomething went wrong:\n' + str(error))
 
 main()
