@@ -24,7 +24,7 @@ BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _
 
                                                   Organize music files
 """
-HORIZONTAL_RULE = "-" * 200
+HORIZONTAL_RULE = "-" * 140
 
 parser = argparse.ArgumentParser(description='Organize music files')
 parser.add_argument('--source_path', dest="source_path",  type=str, help='The parent folder of the directory tree containing all music files you want to organize.', required=True)
@@ -34,6 +34,22 @@ parser.add_argument('--file_format', dest="file_format", type=str, help='Comma s
 parser.add_argument('--desired_bitrate', dest="desired_bitrate", type=int, help='Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}', default=100)
 args = parser.parse_args()
 organizing_pattern_regular_expression = re.compile(r'\{.*?\}')
+
+def sanitize_metadata_tag(value):
+    sanitized_value = str(value).strip()
+    sanitized_value = sanitized_value.replace("/","_")
+    sanitized_value = sanitized_value.replace("\\","_")
+    sanitized_value = sanitized_value.replace("..","_")
+    sanitized_value = sanitized_value.replace("\'","_")
+    sanitized_value = sanitized_value.replace("\"","_")
+    sanitized_value = sanitized_value.replace("|","_")
+    sanitized_value = sanitized_value.replace(":","_")
+    sanitized_value = sanitized_value.replace(">","_")
+    sanitized_value = sanitized_value.replace("<","_")
+    sanitized_value = sanitized_value.replace("?","_")
+    sanitized_value = sanitized_value.replace("*","_")
+    
+    return sanitized_value
 
 def get_destination_path(metadata):
     basic_path = args.destination_path +"/" + args.organizing_pattern
@@ -62,16 +78,7 @@ def get_destination_path(metadata):
             metadata[tag] = str(metadata['year'])[0:-1]+"0"
 
         if metadata[tag]:
-            organizing_tag_value = str(metadata[tag]).strip()
-            organizing_tag_value = organizing_tag_value.replace("/","_")
-            organizing_tag_value = organizing_tag_value.replace("\\","_")
-            organizing_tag_value = organizing_tag_value.replace("..","_")
-            organizing_tag_value = organizing_tag_value.replace(":","_")
-            organizing_tag_value = organizing_tag_value.replace(">","_")
-            organizing_tag_value = organizing_tag_value.replace("<","_")
-            organizing_tag_value = organizing_tag_value.replace("?","_")
-            organizing_tag_value = organizing_tag_value.replace("*","_")
-
+            organizing_tag_value = sanitize_metadata_tag(metadata[tag])
             basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
         else:
             basic_path = basic_path.replace(organizing_tag, "UNKNOWN")
