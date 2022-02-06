@@ -1,11 +1,15 @@
 #!/bin/env python3
-import argparse
+
+# native
 import glob
 import hashlib
 import re
 import os
 import shutil
 import sys
+
+# 3rparty
+import click
 from tinytag import TinyTag
 
 
@@ -26,43 +30,62 @@ BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _
 """
 HORIZONTAL_RULE = "-" * 140
 
-parser = argparse.ArgumentParser(description="Organize music files")
-parser.add_argument(
+
+@click.command()
+@click.option(
     "--source_path",
-    dest="source_path",
-    type=str,
-    help="The parent folder of the directory tree containing all music files you want to organize.",
+    help="The parent folder of the directory tree containing all music files you want to organize",
+    type=click.Path(exists=True, file_okay=False),
     required=True,
 )
-parser.add_argument(
+@click.option(
     "--destination_path",
-    dest="destination_path",
-    type=str,
-    help="The parent folder where the music files are going to be organized.",
+    help="The parent folder where the music files are going to be organized",
+    type=click.Path(exists=True, file_okay=False),
     required=True,
 )
-parser.add_argument(
+@click.option(
     "--organizing_pattern",
-    dest="organizing_pattern",
+    help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrateclass}/") will derive something like "Rock/1980/GOOD_BITRATE/',
     type=str,
-    help='The pattern describing how the directories hierarchy is going to be created. (e.g., "{genre}/{decade}/{bitrateclass}/") will derive something like "Rock/1980/GOOD_BITRATE/"',
     default="{genre}/{decade}/{bitrateclass}/",
 )
-parser.add_argument(
+@click.option(
     "--file_format",
-    dest="file_format",
-    type=str,
     help='Comma separated file extensions to scan. (e.g., "mp3,m4a")',
+    type=str,
     default="mp3,m4a",
 )
-parser.add_argument(
+@click.option(
     "--desired_bitrate",
-    dest="desired_bitrate",
-    type=int,
     help="Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}",
+    type=int,
     default=100,
 )
-args = parser.parse_args()
+def cmd(
+    source_path, destination_path, organizing_pattern, file_format, desired_bitrate
+):
+    """Ad-hoc helper tool for organize music files"""
+
+    try:
+        print(BANNER)
+        file_extensions = file_format.split(",")
+
+        for extension in file_extensions:
+            search_path = source_path + "/**/*." + extension
+            files = sorted(list(glob.glob(search_path, recursive=True)))
+            for filename in files:
+                process_file(
+                    filename, destination_path, organizing_pattern, desired_bitrate
+                )
+
+        find_duplicated()
+    except KeyboardInterrupt:
+        print("\nBye...\n")
+    except Exception as error:
+        print("\nSomething went wrong:\n" + str(error))
+
+
 organizing_pattern_regular_expression = re.compile(r"\{.*?\}")
 
 
@@ -83,24 +106,29 @@ def sanitize_metadata_tag(value):
     return sanitized_value
 
 
-def get_destination_path(metadata):
-    basic_path = args.destination_path + "/" + args.organizing_pattern
+def build_basic_path(destination_path, organizing_pattern):
+
+    basic_path = destination_path + "/" + organizing_pattern
     basic_path = basic_path.replace("//", "/")
     basic_path = basic_path.replace("\\", "/")
+    return basic_path
+
+
+def get_destination_path(metadata, basic_path, desired_bitrate):
 
     organizing_tags = organizing_pattern_regular_expression.findall(basic_path)
     for organizing_tag in organizing_tags:
         tag = organizing_tag[1:-1]
 
         if tag == "bitratelevel":
-            metadata[tag] = metadata["bitrate"] // args.desired_bitrate
+            metadata[tag] = metadata["bitrate"] // desired_bitrate
         elif tag == "bitrateclass":
-            if metadata["bitrate"] >= args.desired_bitrate:
+            if metadata["bitrate"] >= desired_bitrate:
                 metadata[tag] = "GOOD_BITRATE"
             else:
                 metadata[tag] = "POOR_BITRATE"
         elif tag == "bitratefilter":
-            if metadata["bitrate"] < args.desired_bitrate:
+            if metadata["bitrate"] < desired_bitrate:
                 return None
             else:
                 metadata[tag] = "FILTERED_BITRATE"
@@ -121,9 +149,10 @@ def get_destination_path(metadata):
 processed_files = dict()
 
 
-def process_file(filename):
+def process_file(filename, destination_path, organizing_pattern, desired_bitrate):
     metadata = TinyTag.get(filename).as_dict()
-    destination_path = get_destination_path(metadata)
+    baic_path = build_basic_path(destination_path, organizing_pattern)
+    destination_path = get_destination_path(metadata, baic_path, desired_bitrate)
     if destination_path:
         print(f'[+]"{filename}" ==> "{destination_path}"')
         if not os.path.isdir(destination_path):
@@ -189,22 +218,5 @@ def find_duplicated():
                     print("###")
 
 
-def main():
-    try:
-        print(BANNER)
-        file_extensions = args.file_format.split(",")
-
-        for extension in file_extensions:
-            search_path = args.source_path + "/**/*." + extension
-            files = sorted(list(glob.glob(search_path, recursive=True)))
-            for file in files:
-                process_file(file)
-
-        find_duplicated()
-    except KeyboardInterrupt:
-        print("\nBye...\n")
-    except Exception as error:
-        print("\nSomething went wrong:\n" + str(error))
-
-
-main()
+if __name__ == "__main__":
+    cmd()
