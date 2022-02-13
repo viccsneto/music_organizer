@@ -40,7 +40,7 @@ parser.add_argument("--desired_bitrate", dest="desired_bitrate", type=int, help=
 args = parser.parse_args()
 organizing_pattern_regular_expression = re.compile(r"\{.*?\}")
 
-def sanitize_metadata_tag(value):
+def sanitize_metadata_tag(value):  
     sanitized_value = str(value).strip()
     sanitized_value = sanitized_value.replace("/","_")
     sanitized_value = sanitized_value.replace("\\","_")
@@ -57,15 +57,14 @@ def sanitize_metadata_tag(value):
     return sanitized_value
 
 def build_basic_path(destination_path, organizing_pattern):
-
     basic_path = destination_path + "/" + organizing_pattern
     basic_path = basic_path.replace("//", "/")
     basic_path = basic_path.replace("\\", "/")
+
     return basic_path
 
 
 def get_destination_path(metadata, basic_path, desired_bitrate):
-
     organizing_tags = organizing_pattern_regular_expression.findall(basic_path)
     for organizing_tag in organizing_tags:
         organizing_tag = organizing_tag.strip()
