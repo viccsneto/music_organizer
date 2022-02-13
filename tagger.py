@@ -29,12 +29,14 @@ BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _
 """
 HORIZONTAL_RULE = "-" * 140
 
+DEFAULT_DESIRED_BITRATE = 192
+
 parser = argparse.ArgumentParser(description="Organize music files")
 parser.add_argument("--source_path", dest="source_path",  type=str, help="The parent folder of the directory tree containing all music files you want to organize.", required=True)
 parser.add_argument("--destination_path", dest="destination_path", type=str, help="The parent folder where the music files are going to be organized.", required=True)
 parser.add_argument("--organizing_pattern", dest="organizing_pattern", type=str, help="The pattern describing how the directories hierarchy is going to be created. (e.g., \"{genre}/{decade}/{bitrateclass}/\") will derive something like \"Rock/1980/GOOD_BITRATE/\"", default="{genre}/{decade}/{bitrateclass}/")
 parser.add_argument("--file_format", dest="file_format", type=str, help="Comma separated file extensions to scan. (e.g., \mp3,m4a\)", default="mp3,m4a")
-parser.add_argument("--desired_bitrate", dest="desired_bitrate", type=int, help="Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}", default=100)
+parser.add_argument("--desired_bitrate", dest="desired_bitrate", type=int, help="Parameter used to calculate {bitratelevel} or to be used as a filter for {bitrateclass} or {bitratefilter}", default=DEFAULT_DESIRED_BITRATE)
 args = parser.parse_args()
 organizing_pattern_regular_expression = re.compile(r"\{.*?\}")
 
@@ -138,17 +140,18 @@ def find_colliding(candidates):
     for candidate in candidates:
         digest = get_digest(candidate)
         if not digest in candidate_digests.keys():
-            candidate_digests[digest] = list()
-        candidate_digests[digest].append(candidate)
+            candidate_digests[digest] = set()
+        filename_only = os.path.basename(candidate)
+        candidate_digests[digest].add(filename_only)
 
     for digests in candidate_digests.keys():
         if len(candidate_digests[digest]) > 1:
-            colliding.append(candidate_digests[digest])
+            colliding.append(list(candidate_digests[digest]))
 
     return colliding
 
 
-def find_duplicated(processed_files):
+def find_duplicates(processed_files):
     for destination_folder in processed_files:
         for size in processed_files[destination_folder]:
             candidates = processed_files[destination_folder][size]
@@ -160,9 +163,8 @@ def find_duplicated(processed_files):
                     print(HORIZONTAL_RULE)
                     for file_list in colliding:
                         for i in range(len(file_list)):
-                            print(f"\t{i+1} {file_list[i]}")
-                        print("\n\n")
-                    print("###")
+                            print(f"\t\"{file_list[i]}\"")
+                    print("\n")
 def main():
     try:
         print(BANNER)    
@@ -178,7 +180,7 @@ def main():
             for file in files:
                 process_file(processed_files, file, args.destination_path, args.organizing_pattern, args.desired_bitrate)
 
-        find_duplicated(processed_files)
+        find_duplicates(processed_files)
     except KeyboardInterrupt:
         print("\nBye...\n")
     except Exception as error:
