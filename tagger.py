@@ -12,19 +12,14 @@ import traceback
 from tinytag import TinyTag
 
 
-BANNER = """ ____      _   ____   _    ____ _   _ _   _   __  __           _      
-|  _ \    | | |  _ \ / \  / ___| | | | | | | |  \/  |_   _ ___(_) ___ 
-| | | |_  | | | |_) / _ \| |   | |_| | | | | | |\/| | | | / __| |/ __|
-| |_| | |_| | |  __/ ___ \ |___|  _  | |_| | | |  | | |_| \__ \ | (__ 
-|____/ \___/  |_| /_/   \_\____|_| |_|\___/  |_|  |_|\__,_|___/_|\___|
-                                                                      
-  ___                        _              
- / _ \ _ __ __ _  __ _ _ __ (_)_______ _ __ 
-| | | | "__/ _` |/ _` | "_ \| |_  / _ \ "__|
-| |_| | | | (_| | (_| | | | | |/ /  __/ |   
- \___/|_|  \__, |\__,_|_| |_|_/___\___|_|   
-           |___/                            
-
+BANNER = \
+"""
+ __  __           _         ___                        _              
+|  \/  |_   _ ___(_) ___   / _ \ _ __ __ _  __ _ _ __ (_)_______ _ __ 
+| |\/| | | | / __| |/ __| | | | | '__/ _` |/ _` | '_ \| |_  / _ \ '__|
+| |  | | |_| \__ \ | (__  | |_| | | | (_| | (_| | | | | |/ /  __/ |   
+|_|  |_|\__,_|___/_|\___|  \___/|_|  \__, |\__,_|_| |_|_/___\___|_|
+                                     |___/                            
                                                   Organize music files
 """
 HORIZONTAL_RULE = "-" * 140
@@ -73,7 +68,7 @@ def get_destination_path(metadata, basic_path, desired_bitrate):
         if tag == "bitratelevel":
             metadata[tag] = metadata["bitrate"] // desired_bitrate
         elif tag == "bitrateclass":
-            if metadata["bitrate"] >= desired_bitrate:
+            if "bitrate" in metadata and metadata["bitrate"] >= desired_bitrate:
                 metadata[tag] = "GOOD_BITRATE"
             else:
                 metadata[tag] = "POOR_BITRATE"
@@ -91,7 +86,7 @@ def get_destination_path(metadata, basic_path, desired_bitrate):
             else:
                 metadata[tag] = "UNKNOWN_DECADE"
 
-        if metadata[tag]:
+        if tag in metadata and metadata[tag]:
             organizing_tag_value = sanitize_metadata_tag(metadata[tag])
             basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
         else:

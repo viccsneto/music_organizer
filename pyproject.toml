@@ -1,0 +1,19 @@
+[project]
+name = "music-organizer"
+version = "0.1.0"
+description = "Organize music files by metadata."
+authors = [
+    { name = "Vicente Neto", email = "vic.cs.neto@gmail.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "tinytag"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest"
+]
+
+[tool.setuptools]
+packages = []
