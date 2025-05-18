@@ -1,6 +1,6 @@
 # Music Organizer
 
-Organize your music files into folders based on their metadata (genre, decade, bitrate, etc.).
+Organize your music files into folders based on their metadata (genre, bitrate, etc.).
 
 ## Features
 - Organizes music files into a directory structure based on customizable patterns
@@ -37,17 +37,17 @@ Organize your music files into folders based on their metadata (genre, decade, b
 Run the script with the required arguments:
 
 ```bash
-python tagger.py --source_path <source_folder> --destination_path <destination_folder>
+python music_organizer.py --source_path <source_folder> --destination_path <destination_folder>
 ```
 
 ### Optional Arguments
-- `--organizing_pattern`: Pattern for directory structure (default: `{genre}/{decade}/{bitrateclass}/`)
+- `--organizing_pattern`: Pattern for directory structure (default: `{genre}/{bitrateclass}/`)
 - `--file_format`: Comma-separated file extensions to scan (default: `mp3,m4a`)
 - `--desired_bitrate`: Bitrate threshold for classification/filtering (default: `192`)
 
 ### Example
 ```bash
-python tagger.py --source_path sample_music --destination_path organized_music --organizing_pattern "{genre}/{decade}/{bitrateclass}/" --file_format "mp3,m4a" --desired_bitrate 192
+python music_organizer.py --source_path sample_music --destination_path sample_output --organizing_pattern "{genre}/{bitrateclass}/" --file_format "mp3,m4a" --desired_bitrate 192
 ```
 
 ## Notes
