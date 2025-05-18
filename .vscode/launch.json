@@ -1,10 +1,10 @@
 {
     "configurations": [
     {
-        "name": "Python: tagger.py",
+        "name": "Python: music_organizer.py",
         "type": "python",
         "request": "launch",
-        "program": "tagger.py",
+        "program": "music_organizer.py",
         "console": "integratedTerminal",
         "args": [
             "--source_path",
