@@ -1,5 +1,5 @@
 # Music Organizer
-
+![music_organizer logo](assets/music_organizer_logo.png)
 Organize your music files into folders based on their metadata (genre, bitrate, etc.).
 
 ## Features
