@@ -35,7 +35,10 @@ parser.add_argument("--desired_bitrate", dest="desired_bitrate", type=int, help=
 args = parser.parse_args()
 organizing_pattern_regular_expression = re.compile(r"\{.*?\}")
 
-def sanitize_metadata_tag(value):  
+def sanitize_metadata_tag(value):
+    if isinstance (value, list):
+        value = " ".join(value)
+
     sanitized_value = str(value).strip()
     sanitized_value = sanitized_value.replace("/","_")
     sanitized_value = sanitized_value.replace("\\","_")
@@ -68,7 +71,7 @@ def get_destination_path(metadata, basic_path, desired_bitrate):
         if tag == "bitratelevel":
             metadata[tag] = metadata["bitrate"] // desired_bitrate
         elif tag == "bitrateclass":
-            if "bitrate" in metadata and metadata["bitrate"] >= desired_bitrate:
+            if metadata["bitrate"] >= desired_bitrate:
                 metadata[tag] = "GOOD_BITRATE"
             else:
                 metadata[tag] = "POOR_BITRATE"
