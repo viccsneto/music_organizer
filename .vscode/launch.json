@@ -10,7 +10,7 @@
             "--source_path",
             "./sample_music/",
             "--destination_path",
-            "output",
+            "sample_output",
             "--organizing_pattern",
             "{year}/{genre}/{artist}/{album}"
         ]
