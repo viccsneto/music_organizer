@@ -1,3 +1,4 @@
-__pycache__
-tagger.spec
-build
+__pycache__/
+sample_output/
+tests_output/
+music_organizer.egg-info/
