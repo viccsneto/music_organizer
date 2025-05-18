@@ -17,13 +17,12 @@ def find_colliding(candidates):
     candidate_digests = dict()
     for candidate in candidates:
         digest = get_digest(candidate)
-        if digest not in candidate_digests.keys():
+        if digest not in candidate_digests:
             candidate_digests[digest] = set()
-        filename_only = os.path.basename(candidate)
-        candidate_digests[digest].add(filename_only)
-    for digest in candidate_digests.keys():
-        if len(candidate_digests[digest]) > 1:
-            colliding.append(list(candidate_digests[digest]))
+        candidate_digests[digest].add(candidate)  # Use full path, not just basename
+    for digest, files in candidate_digests.items():
+        if len(files) > 1:
+            colliding.append(list(files))
     return colliding
 
 def find_duplicates(processed_files):
