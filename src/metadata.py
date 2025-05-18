@@ -26,12 +26,6 @@ def get_destination_path(metadata, basic_path, desired_bitrate):
                 metadata[tag] = "FILTERED_BITRATE"
         elif tag == "bitrate":
             metadata[tag] = int(metadata[tag])
-        elif tag == "decade":
-            year = str(metadata["year"]).strip()
-            if year.isdigit():
-                metadata[tag] = year[0:-1] + "0"
-            else:
-                metadata[tag] = "UNKNOWN_DECADE"
         if tag in metadata and metadata[tag]:
             organizing_tag_value = utils.sanitize_metadata_tag(metadata[tag])
             basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
