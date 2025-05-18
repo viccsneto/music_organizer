@@ -17,7 +17,7 @@ Organize your music files into folders based on their metadata (genre, bitrate, 
 
 1. **Clone the repository and enter the project directory:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/viccsneto/music_organizer
    cd music_organizer
    ```
 
@@ -52,7 +52,7 @@ python music_organizer.py --source_path sample_music --destination_path sample_o
 
 ## Notes
 - The script will print out the organization process and warn about duplicates.
-- Requirements are managed via `pyproject.toml` and `setup_environment.sh`. The old `requirements.txt` is deprecated.
+- Requirements are managed via `pyproject.toml` and `setup_environment.sh`
 
 ## License
 MIT
