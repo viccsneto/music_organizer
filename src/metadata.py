@@ -36,7 +36,25 @@ def get_destination_path(metadata, basic_path, desired_bitrate):
                     metadata[tag] = int(match.group(0))
                 else:
                     metadata[tag] = None
-            
+        elif tag == "decade":
+            year = metadata.get("year")
+            if isinstance(year, list):
+                year = year[0]
+            if isinstance(year, str):
+                match = re.search(r'\d+', year)
+                if match:
+                    year_int = int(match.group(0))
+                else:
+                    year_int = None
+            elif isinstance(year, int):
+                year_int = year
+            else:
+                year_int = None
+            if year_int is not None:
+                metadata[tag] = str(year_int - (year_int % 10))
+            else:
+                metadata[tag] = "UNKNOWN_DECADE"
+
         if tag in metadata and metadata[tag]:
             organizing_tag_value = utils.sanitize_metadata_tag(metadata[tag])
             basic_path = basic_path.replace(organizing_tag, organizing_tag_value)
