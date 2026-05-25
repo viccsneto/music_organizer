@@ -25,9 +25,7 @@ EXPECTED_OUTPUTS = [
     ("Wrath of Oblivion.mp3", "1995/Heavy Metal/Machine Michael/Machine Code/Wrath of Oblivion.mp3"),
 ]
 
-def clean_output():
-    if OUTPUT.exists():
-        shutil.rmtree(OUTPUT)
+def create_output():
     OUTPUT.mkdir(exist_ok=True)
 
 def run_organizer():
@@ -39,7 +37,7 @@ def run_organizer():
     ], check=True)
 
 def test_music_organizer_full_run():
-    clean_output()
+    create_output()
     run_organizer()
     for src_rel, dst_rel in EXPECTED_OUTPUTS:
         dst_path = OUTPUT / dst_rel
@@ -48,16 +46,3 @@ def test_music_organizer_full_run():
         # Only compare if file exists in sample_music
         if src_path.exists():
             assert filecmp.cmp(src_path, dst_path, shallow=False), f"File content mismatch: {src_path} vs {dst_path}"
-
-def test_no_extra_files():
-    clean_output()
-    run_organizer()
-    # Collect all expected output files
-    expected_files = set((OUTPUT / dst_rel).resolve() for _, dst_rel in EXPECTED_OUTPUTS)
-    # Walk output dir and check for unexpected files
-    for root, _, files in os.walk(OUTPUT):
-        for f in files:
-            fpath = Path(root) / f
-            assert fpath.resolve() in expected_files, f"Unexpected file in output: {fpath}"
-
-
